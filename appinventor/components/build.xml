@@ -195,10 +195,14 @@
     <!-- Used by Dropbox component -->
     <copy toFile="${public.deps.dir}/dropbox.jar" file="${lib.dir}/dropbox/dropbox-android-sdk-1.5.3.jar" />
     <copy toFile="${public.deps.dir}/json-simple.jar" file="${lib.dir}/dropbox/json_simple-1.1.jar" />
-    <!-- Used by LDP-CoAP components -->
+    <!-- Used by LDP-CoAP client components -->
     <copy toFile="${public.deps.dir}/element-connector-1.0.7.jar" file="${lib.dir}/element-connector/element-connector-1.0.7.jar" />
     <copy toFile="${public.deps.dir}/californium-core-ldp-1.0.0-SNAPSHOT.jar" file="${lib.dir}/californium-core-ldp/californium-core-ldp-1.0.0-SNAPSHOT.jar" />
-    <!-- End PUNYA dependencies -->
+	<!-- Used by LDP-CoAP server components -->
+	<copy toFile="${public.deps.dir}/marmotta-util-rdfpatch-rdf4j-3.3.0.jar" file="${lib.dir}/marmotta-util-rdfpatch-rdf4j/marmotta-util-rdfpatch-rdf4j-3.3.0.jar" />
+    <copy toFile="${public.deps.dir}/ldp-coap-core-1.2.0-SNAPSHOT.jar" file="${lib.dir}/ldp-coap-core/ldp-coap-core-1.2.0-SNAPSHOT.jar" />
+    <copy toFile="${public.deps.dir}/slf4j-android-1.7.30.jar" file="${lib.dir}/slf4j-android/slf4j-android-1.7.30.jar" />
+	<!-- End PUNYA dependencies -->
 
 
     <!-- Add extension libraries here -->

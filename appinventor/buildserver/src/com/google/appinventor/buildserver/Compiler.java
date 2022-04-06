@@ -64,6 +64,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import java.io.FilenameFilter;
+import java.io.FileFilter;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -1770,9 +1778,7 @@ public final class Compiler {
 	LOG.info("The asset dir: " + project.getAssetsDirectory());
  
 	createDirectory(project.getAssetsDirectory()); //make sure we have asset folder created
-
 	try {
-
 	  File assetFolder = project.getAssetsDirectory();
 	  
 	  for (String templateName : templatesNeeded) {
@@ -1783,17 +1789,13 @@ public final class Compiler {
 				" to " + assetFolder.getAbsolutePath() + "/" + templateName);
 	    Files.copy(Resources.newInputStreamSupplier(Compiler.class.getResource(source)),
 	    		  new File(target));
-
 	  }
-
 	  
 	} catch (IOException e) {
 	    e.printStackTrace();
 	    return false;
 	}
-
 	return true;
-
   }*/
   
   /*
@@ -1881,8 +1883,29 @@ public final class Compiler {
       if (nativeLibsNeeded.size() != 0) { // Need to add native libraries...
         apkBuilder.addNativeLibraries(libsDir);
       }
+      
+      
+      String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+      
+      String path = absolutePath.split("buildserver")[0] + "/lib/ldp-coap-core/res";
+      
+      File folder = new File(path);
+      
+      final int folderPathLength = folder.getCanonicalPath().length();
+      final List<File> resourceFiles = new ArrayList<>(  );
+      collectFiles( folder, resourceFiles );
+      
+      for ( final File resourceFile : resourceFiles ){
+	final String resourceName = resourceFile
+	    .getCanonicalPath()
+	    .substring( folderPathLength + 1 )
+	    .replaceAll( "\\\\", "/" );
+	apkBuilder.addFile( resourceFile,  resourceName );
+      }
+      
       // TODO(ewpatton): Generalize this
       apkBuilder.addResourcesFromJar(new File(getResource(RUNTIME_FILES_DIR + "jena-reasoner.jar")));
+     
       apkBuilder.sealApk();
       return true;
     } catch (Exception e) {
@@ -1927,7 +1950,35 @@ public final class Compiler {
     this.reporter = reporter;
 
   }
+  
+  /*
+  Method required to parse input folder*/
+  private void collectFiles( File folder, final List<File> collectedFiles ){
+        folder.listFiles( new FileFilter()
+        {
+            @Override
+            public boolean accept( File file )
+            {
+                if ( file.isDirectory() )
+                {
+                    collectFiles( file, collectedFiles );
+                }
+                else if ( file.isFile() )
+                {
+                    if ( !file.getName().endsWith( ".class" ) )
+                    {
+                        collectedFiles.add( file );
+                    }
+                }
+                return false;
+            }
+        } );
 
+    }
+  
+  
+  
+  
   /*
    * Runs the Kawa compiler in a separate process to generate classes. Returns false if not able to
    * create a class file for every source file in the project.
@@ -3101,15 +3152,12 @@ public final class Compiler {
       if (componentTemplates.isEmpty()) {
         String templatesJson = Resources.toString(
             Compiler.class.getResource(COMPONENT_TEMPLATES), Charsets.UTF_8);
-
         JSONArray componentsArray = new JSONArray(templatesJson);
         int componentslength = componentsArray.length();
         for (int componentsIndex = 0; componentsIndex < componentslength; componentsIndex++) {
           JSONObject componentObject = componentsArray.getJSONObject(componentsIndex);
           String name = componentObject.getString("name");
-
           Set<String> templatesForThisComponent = Sets.newHashSet();
-
           JSONArray templatesArray = componentObject.getJSONArray("templates");
           int templatesLength = templatesArray.length();
           for (int templatesIndex = 0; templatesIndex < templatesLength; templatesIndex++) {
